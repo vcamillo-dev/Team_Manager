@@ -1,0 +1,3 @@
+Utilizador (username): root
+
+Senha (password): admin
