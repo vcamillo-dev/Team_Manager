@@ -1,5 +1,5 @@
 To run frontend 
-Npm run dev
+npm run dev
 
 Backend
 ./mvnw spring-boot:run

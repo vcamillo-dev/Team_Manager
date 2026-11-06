@@ -1,0 +1,266 @@
+.painel-administracao {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(17rem, 22rem);
+  gap: 1.25rem;
+  align-items: start;
+  text-align: left;
+}
+
+.acoes-administracao {
+  grid-column: 1 / -1;
+  justify-self: center;
+  margin-bottom: -0.35rem;
+}
+
+.painel-notas {
+  min-width: 0;
+}
+
+.painel-notas > button {
+  margin-bottom: 0.5rem;
+}
+
+.painel-lateral {
+  position: sticky;
+  top: 1rem;
+  grid-column: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  align-self: start;
+  max-height: calc(100vh - 2rem);
+  overflow-y: auto;
+}
+
+.tabela-scroll {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.tabela-jogadores {
+  width: 100%;
+  min-width: 48rem;
+  margin-top: 0.5rem;
+  border-collapse: separate;
+  border-spacing: 0;
+  color: inherit;
+  background: transparent;
+  font-size: 0.82rem;
+}
+
+.tabela-jogadores th,
+.tabela-jogadores td {
+  padding: 0.4rem 0.55rem;
+  border-bottom: 1px solid color-mix(in srgb, currentColor 18%, transparent);
+  text-align: center;
+  white-space: nowrap;
+}
+
+.tabela-jogadores th + th,
+.tabela-jogadores td + td {
+  border-left: 1px solid color-mix(in srgb, currentColor 18%, transparent);
+}
+
+.tabela-jogadores thead th {
+  background: color-mix(in srgb, currentColor 8%, transparent);
+  font-weight: 700;
+}
+
+.tabela-jogadores thead th:first-child,
+.tabela-jogadores tbody td:first-child {
+  text-align: left;
+}
+
+.tabela-jogadores tbody tr:nth-child(even) {
+  background: color-mix(in srgb, currentColor 5%, transparent);
+}
+
+.tabela-jogadores tbody tr:hover {
+  background: color-mix(in srgb, currentColor 10%, transparent);
+}
+
+.tabela-jogadores tbody tr.jogador-na-lista {
+  box-shadow: inset 3px 0 currentColor;
+}
+
+.tabela-jogadores th button {
+  padding: 0.15rem 0.25rem;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.tabela-jogadores input {
+  box-sizing: border-box;
+  width: 4.25rem;
+  padding: 0.25rem 0.3rem;
+  border: 1px solid color-mix(in srgb, currentColor 30%, transparent);
+  border-radius: 0.3rem;
+  background: transparent;
+  color: inherit;
+  text-align: center;
+  font: inherit;
+}
+
+.lista-atual {
+  padding: 0.9rem;
+  border: 1px solid color-mix(in srgb, currentColor 22%, transparent);
+  border-radius: 0.5rem;
+  background: color-mix(in srgb, currentColor 3%, transparent);
+}
+
+.botao-tirar-times {
+  width: 100%;
+  margin-top: 0.75rem;
+  padding: 0.6rem 0.8rem;
+  border: 1px solid color-mix(in srgb, currentColor 35%, transparent);
+  border-radius: 0.4rem;
+  background: color-mix(in srgb, currentColor 9%, transparent);
+  color: inherit;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.botao-tirar-times:hover {
+  background: color-mix(in srgb, currentColor 15%, transparent);
+}
+
+.erro-times {
+  margin-top: 0.65rem !important;
+  color: #d14b4b;
+}
+
+.lista-atual h2 {
+  margin: 0 0 0.35rem;
+  font-size: 1.1rem;
+}
+
+.lista-atual h3 {
+  margin: 0.9rem 0 0.4rem;
+  font-size: 0.95rem;
+}
+
+.lista-atual p {
+  margin: 0 0 0.65rem;
+  font-size: 0.82rem;
+}
+
+.lista-atual textarea {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 9rem;
+  padding: 0.55rem;
+  resize: vertical;
+  border: 1px solid color-mix(in srgb, currentColor 30%, transparent);
+  border-radius: 0.35rem;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 0.85rem;
+}
+
+.lista-atual ul {
+  max-height: 20rem;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  list-style: none;
+}
+
+.lista-atual li {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.45rem 0;
+  border-bottom: 1px solid color-mix(in srgb, currentColor 15%, transparent);
+  font-size: 0.85rem;
+}
+
+.lista-atual li small {
+  opacity: 0.75;
+  text-align: right;
+}
+
+.lista-atual li.nome-nao-encontrado {
+  opacity: 0.65;
+}
+
+.lista-atual li.nome-ambiguo {
+  color: #d99a28;
+}
+
+.lista-atual .lista-vazia {
+  margin-top: 0.6rem;
+  opacity: 0.7;
+}
+
+.painel-times {
+  padding: 0.9rem;
+  border: 1px solid color-mix(in srgb, currentColor 22%, transparent);
+  border-radius: 0.5rem;
+  background: color-mix(in srgb, currentColor 3%, transparent);
+}
+
+.painel-times h2 {
+  margin: 0 0 0.7rem;
+  font-size: 1.1rem;
+}
+
+.times-gerados {
+  display: grid;
+  gap: 0.65rem;
+}
+
+.cartao-time {
+  padding: 0.65rem;
+  border: 1px solid color-mix(in srgb, currentColor 18%, transparent);
+  border-radius: 0.4rem;
+  background: color-mix(in srgb, currentColor 4%, transparent);
+}
+
+.cartao-time h3 {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin: 0 0 0.35rem;
+  font-size: 0.9rem;
+}
+
+.cartao-time h3 span {
+  font-weight: 400;
+}
+
+.cartao-time ol {
+  margin: 0;
+  padding-left: 1.35rem;
+}
+
+.cartao-time li {
+  padding: 0.16rem 0;
+  font-size: 0.82rem;
+}
+
+.cartao-time li small {
+  float: right;
+  opacity: 0.75;
+}
+
+@media (max-width: 1200px) {
+  .painel-administracao {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .lista-atual {
+    position: static;
+  }
+
+  .painel-lateral {
+    position: static;
+    grid-column: 1;
+    max-height: none;
+    overflow: visible;
+  }
+}
