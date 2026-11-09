@@ -1,0 +1,676 @@
+.conteudo-principal {
+  width: 100%;
+}
+
+.pagina-dashboard {
+  display: grid;
+  gap: 1.15rem;
+  padding-bottom: 1.5rem;
+}
+
+.cabecalho-dashboard {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.25rem 0 0.3rem;
+}
+
+.cabecalho-dashboard h1 {
+  margin: 0.1rem 0 0.2rem;
+  color: var(--text-h);
+  font-size: clamp(1.65rem, 3vw, 2.1rem);
+  letter-spacing: -0.025em;
+  line-height: 1.15;
+}
+
+.cabecalho-dashboard p {
+  margin: 0.35rem 0 0;
+  font-size: 0.88rem;
+}
+
+.sobretitulo {
+  color: var(--accent);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+}
+
+.atualizado-dashboard,
+.contador-registros {
+  color: var(--text);
+  font-size: 0.78rem;
+  opacity: 0.75;
+}
+
+.grade-metricas {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.cartao-dashboard {
+  min-width: 0;
+  border: 1px solid color-mix(in srgb, var(--border) 85%, transparent);
+  border-radius: 0.45rem;
+  background: color-mix(in srgb, var(--bg) 97%, currentColor 3%);
+  box-shadow: none;
+}
+
+.metrica-principal {
+  display: flex;
+  min-height: 7rem;
+  flex-direction: column;
+  justify-content: center;
+  padding: 1rem 1.1rem;
+}
+
+.metrica-principal > span {
+  color: var(--text);
+  font-size: 0.66rem;
+  font-weight: 800;
+  letter-spacing: 0.09em;
+  opacity: 0.78;
+}
+
+.metrica-principal strong {
+  margin: 0.15rem 0;
+  color: var(--text-h);
+  font-size: 1.75rem;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.2;
+}
+
+.metrica-principal small {
+  color: var(--text);
+  font-size: 0.72rem;
+  opacity: 0.72;
+}
+
+.subindo {
+  color: #44b88a !important;
+}
+
+.caindo {
+  color: #e87979 !important;
+}
+
+.grade-tendencias {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.cartao-variacoes {
+  padding: 0.85rem 1rem 0.6rem;
+}
+
+.titulo-cartao {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.titulo-cartao h2,
+.destaque-atual h2,
+.cabecalho-jogador h2 {
+  margin: 0;
+  color: var(--text-h);
+  font-size: 1rem;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+}
+
+.indicador-tendencia {
+  display: grid;
+  width: 1.8rem;
+  height: 1.8rem;
+  place-items: center;
+  border-radius: 0.35rem;
+  background: color-mix(in srgb, currentColor 9%, transparent);
+  font-size: 1.25rem;
+}
+
+.indicador-tendencia.subindo {
+  background: color-mix(in srgb, #44b88a 15%, transparent);
+}
+
+.indicador-tendencia.caindo {
+  background: color-mix(in srgb, #e87979 15%, transparent);
+}
+
+.lista-ranking {
+  margin: 0.55rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.lista-ranking li {
+  display: grid;
+  grid-template-columns: 1.4rem minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.45rem;
+  min-height: 2.6rem;
+  border-top: 1px solid var(--border);
+}
+
+.posicao-ranking {
+  color: var(--text);
+  font-size: 0.75rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.nome-ranking {
+  overflow: hidden;
+  color: var(--text-h);
+  font-size: 0.84rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.nome-ranking small {
+  display: block;
+  margin-top: -0.08rem;
+  color: var(--text);
+  font-size: 0.68rem;
+  opacity: 0.72;
+}
+
+.lista-ranking strong {
+  font-size: 0.84rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.estado-vazio {
+  color: var(--text);
+  font-size: 0.83rem;
+  opacity: 0.76;
+}
+
+.cartao-variacoes > .estado-vazio {
+  min-height: 7rem;
+  display: flex;
+  align-items: center;
+  margin: 0;
+  line-height: 1.6;
+}
+
+.destaque-atual {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.1rem;
+}
+
+.destaque-atual > strong {
+  color: var(--accent);
+  font-size: 1.6rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.nota-historico {
+  margin: 0.25rem 0 0;
+  color: var(--text);
+  font-size: 0.72rem;
+  line-height: 1.5;
+  opacity: 0.7;
+}
+
+.nota-geral {
+  margin-top: -0.45rem;
+}
+
+.estado-dashboard {
+  padding: 2rem 0;
+  color: var(--text);
+  text-align: center;
+}
+
+.erro-dashboard {
+  color: #e87979;
+}
+
+.busca-jogador {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 0.75rem 0.9rem;
+}
+
+.busca-jogador label {
+  color: var(--text-h);
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.busca-jogador input {
+  box-sizing: border-box;
+  width: min(100%, 28rem);
+  min-height: 2.6rem;
+  padding: 0.55rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  background: transparent;
+  color: var(--text-h);
+  font: inherit;
+  font-size: 0.84rem;
+}
+
+.painel-vazio {
+  padding: 1.3rem;
+}
+
+.cabecalho-jogador {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.85rem 1rem;
+}
+
+.cabecalho-jogador h2 {
+  font-size: 1.5rem;
+}
+
+.media-atual {
+  display: flex;
+  align-items: flex-end;
+  flex-direction: column;
+}
+
+.media-atual span {
+  color: var(--text);
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.media-atual strong {
+  color: var(--accent);
+  font-size: 1.65rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.grade-metricas-individual {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.65rem;
+}
+
+.metrica-individual {
+  display: flex;
+  min-height: 4.7rem;
+  align-items: flex-start;
+  justify-content: center;
+  flex-direction: column;
+  gap: 0.12rem;
+  padding: 0.75rem 0.9rem;
+}
+
+.metrica-individual span {
+  color: var(--text);
+  font-size: 0.69rem;
+  opacity: 0.76;
+}
+
+.metrica-individual strong {
+  color: var(--text-h);
+  font-size: 1.1rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.cartao-grafico {
+  padding: 0.85rem 1rem 0.75rem;
+}
+
+.grafico-evolucao {
+  width: 100%;
+  margin-top: 0.7rem;
+  overflow-x: auto;
+}
+
+.grafico-evolucao svg {
+  display: block;
+  width: 100%;
+  min-width: 34rem;
+  overflow: visible;
+}
+
+.linha-grade {
+  stroke: var(--border);
+  stroke-dasharray: 3 6;
+  stroke-width: 1;
+}
+
+.texto-grade,
+.data-ponto {
+  fill: var(--text);
+  font-size: 11px;
+  opacity: 0.75;
+}
+
+.linha-evolucao {
+  fill: none;
+  stroke: var(--accent);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 3;
+}
+
+.ponto-evolucao {
+  fill: var(--bg);
+  stroke: var(--accent);
+  stroke-width: 3;
+}
+
+.valor-ponto {
+  fill: var(--text-h);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.cartao-grafico > .estado-vazio {
+  padding: 1rem 0 0.4rem;
+  line-height: 1.55;
+}
+
+.grade-estatisticas {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.7rem;
+}
+
+.estatistica-dashboard {
+  display: flex;
+  min-width: 0;
+  min-height: 6.3rem;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.18rem;
+  padding: 0.8rem 0.9rem;
+  border: 1px solid var(--border);
+  border-radius: 0.55rem;
+  background: color-mix(in srgb, var(--bg) 94%, var(--text-h) 6%);
+}
+
+.estatistica-dashboard > span {
+  color: var(--text);
+  font-size: 0.76rem;
+}
+
+.estatistica-dashboard > strong {
+  overflow: hidden;
+  color: var(--text-h);
+  font-size: 1.45rem;
+  font-variant-numeric: tabular-nums;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.estatistica-dashboard > small {
+  overflow: hidden;
+  color: var(--text);
+  font-size: 0.7rem;
+  opacity: 0.75;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.painel-avaliadores,
+.painel-comparacao {
+  padding: 0.9rem 1rem;
+}
+
+.lista-medias-avaliadores {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.8rem;
+  margin-top: 0.75rem;
+}
+
+.media-avaliador {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  column-gap: 0.65rem;
+  row-gap: 0.3rem;
+}
+
+.media-avaliador > span {
+  color: var(--text);
+  font-size: 0.78rem;
+}
+
+.media-avaliador > strong {
+  color: var(--text-h);
+  font-size: 0.82rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.media-avaliador > small {
+  color: var(--text);
+  font-size: 0.65rem;
+  opacity: 0.7;
+}
+
+.trilho-avaliador,
+.trilho-comparacao {
+  height: 0.3rem;
+  overflow: hidden;
+  border-radius: 999px;
+  background: color-mix(in srgb, currentColor 12%, transparent);
+}
+
+.trilho-avaliador {
+  grid-column: 1 / -1;
+}
+
+.trilho-avaliador > span,
+.trilho-comparacao > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--accent);
+}
+
+.nota-baixa-dashboard {
+  margin: 0.8rem 0 0;
+  padding-top: 0.65rem;
+  border-top: 1px solid var(--border);
+  color: var(--text);
+  font-size: 0.73rem;
+}
+
+.nota-baixa-dashboard strong {
+  color: var(--text-h);
+}
+
+.painel-comparacao .titulo-cartao p {
+  margin: 0.2rem 0 0;
+  color: var(--text);
+  font-size: 0.75rem;
+}
+
+.seletores-comparacao {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 2rem minmax(0, 1fr);
+  align-items: end;
+  gap: 0.7rem;
+  margin: 0.85rem 0 0.7rem;
+}
+
+.seletores-comparacao label {
+  display: grid;
+  gap: 0.3rem;
+  color: var(--text);
+  font-size: 0.7rem;
+}
+
+.seletores-comparacao select {
+  width: 100%;
+  min-height: 2.25rem;
+  padding: 0.4rem 0.55rem;
+  border: 1px solid var(--border);
+  border-radius: 0.4rem;
+  background: var(--bg);
+  color: var(--text-h);
+  font: inherit;
+  font-size: 0.78rem;
+}
+
+.versus-comparacao {
+  padding-bottom: 0.45rem;
+  color: var(--text);
+  font-size: 0.8rem;
+  text-align: center;
+}
+
+.cabecalho-comparacao {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.5rem;
+  padding: 0.55rem 0;
+  border-top: 1px solid var(--border);
+  color: var(--text-h);
+  font-size: 0.75rem;
+  text-align: center;
+}
+
+.cabecalho-comparacao strong:first-child { text-align: left; }
+.cabecalho-comparacao strong:last-child { text-align: right; }
+
+.linha-comparacao {
+  display: grid;
+  grid-template-columns: 6.8rem minmax(0, 1fr);
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.55rem 0;
+  border-top: 1px solid color-mix(in srgb, var(--border) 75%, transparent);
+}
+
+.rotulo-comparacao {
+  color: var(--text);
+  font-size: 0.72rem;
+}
+
+.valores-comparacao {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.8rem;
+}
+
+.lado-comparacao {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.valor-nota-comparacao {
+  display: flex;
+  align-items: baseline;
+  gap: 0.35rem;
+}
+
+.lado-comparacao strong {
+  color: var(--text-h);
+  font-size: 0.75rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.lado-comparacao-direita .valor-nota-comparacao {
+  justify-content: flex-end;
+}
+
+.lado-comparacao .valor-nota-comparacao small {
+  color: var(--text);
+  font-size: 0.67rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.lado-comparacao.vencedor-comparacao strong,
+.lado-comparacao.vencedor-comparacao .valor-nota-comparacao small {
+  color: #44b88a;
+}
+
+.lado-comparacao.vencedor-comparacao .trilho-comparacao > span {
+  background: #44b88a;
+}
+
+@media (max-width: 900px) {
+  .grade-estatisticas,
+  .grade-metricas-individual {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .lista-medias-avaliadores { grid-template-columns: minmax(0, 1fr); }
+}
+
+@media (max-width: 640px) {
+  .cabecalho-dashboard {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .grade-tendencias {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .grade-estatisticas {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.45rem;
+  }
+
+  .metrica-principal {
+    min-height: 6.1rem;
+    padding: 0.8rem;
+  }
+
+  .metrica-principal strong {
+    font-size: 1.5rem;
+  }
+
+  .busca-jogador {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+
+  .busca-jogador input {
+    width: 100%;
+  }
+
+  .grade-metricas-individual {
+    gap: 0.45rem;
+  }
+
+  .seletores-comparacao {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.45rem;
+  }
+
+  .versus-comparacao { display: none; }
+
+  .linha-comparacao {
+    grid-template-columns: 5.4rem minmax(0, 1fr);
+    gap: 0.35rem;
+  }
+
+  .valores-comparacao { gap: 0.4rem; }
+
+  .lado-comparacao {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.3rem;
+  }
+
+  .metrica-individual {
+    padding: 0.65rem;
+  }
+
+  .destaque-atual {
+    padding: 0.85rem;
+  }
+}

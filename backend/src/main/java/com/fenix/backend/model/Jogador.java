@@ -13,10 +13,13 @@ public class Jogador {
 	private Long id;
 
 	private String nome;
+	// As três notas vêm dos avaliadores e podem ficar vazias quando ainda não avaliaram.
 	private Double notaMarcelinho;
 	private Double notaCamilinho;
 	private Double notaConvidado;
+	// Média recalculada pelo backend; goleiro não participa da média para montar os times.
 	private Double mediaTotal;
+	// Marca goleiros para deixá-los fora do sorteio dos jogadores de linha.
 	private Boolean isGoleiro = false;
 
 	public Jogador() {		

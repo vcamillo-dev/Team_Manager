@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { atualizarNotas, listarJogadores } from '../services/jogadoresApi'
 import '../App.css'
 
+// Esses são os campos que entram na média e que podem ser alterados pela tabela.
 const camposDasNotas = [
   'notaMarcelinho',
   'notaCamilinho',
@@ -9,22 +10,38 @@ const camposDasNotas = [
 ]
 
 function calcularMedia(jogador) {
+  // Nota em branco não entra na conta.
   const notas = camposDasNotas
     .map((campo) => jogador[campo])
     .filter((nota) => nota !== null && nota !== undefined)
 
+  // Se não tem nenhuma nota, não tem média para calcular.
   if (notas.length === 0) return null
 
   return notas.reduce((soma, nota) => soma + nota, 0) / notas.length
 }
 
-function notasSaoIguais(jogadorA, jogadorB) {
+function jogadoresSaoIguais(jogadorA, jogadorB) {
+  // Comparo nome e notas para saber se esse jogador precisa ser salvo.
+  if (jogadorA.nome !== jogadorB.nome) return false
+
   return camposDasNotas.every(
     (campo) => jogadorA[campo] === jogadorB[campo]
   )
 }
 
+function normalizarNomeParaValidacao(nome) {
+  // Tiro acento e espaço sobrando para conferir se o nome já existe.
+  return nome
+    .trim()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/\s+/g, ' ')
+    .toLocaleLowerCase('pt-BR')
+}
+
 function normalizarNome(nome) {
+  // Na lista do dia, ignoro quem convidou e acentos; LINHA e GOLEIRO continuam valendo.
   return nome
     .replace(/\(([^)]*)\)/g, (_, conteudo) => {
       const funcao = conteudo.trim().toLocaleLowerCase('pt-BR')
@@ -37,10 +54,10 @@ function normalizarNome(nome) {
     .toLocaleLowerCase('pt-BR')
 }
 
-// Cadastre aqui variações conhecidas: nome colado -> nome usado no cadastro.
+// Alguns nomes vêm abreviados na lista. Aqui eu digo qual é o nome no cadastro.
 const aliasesJogadores = {
   [normalizarNome('Leônidas Germano')]: 'Leônidas',
-  [normalizarNome('Camillo')]: 'Camilinho',
+  [normalizarNome('Camilinho')]: 'Camillo',
   [normalizarNome('Eduardo Sabino')]: 'Dudu Sabino',
   [normalizarNome('Turra')]: 'Pedro Turra',
   [normalizarNome('Felipe Fifi')]: 'Fifi',
@@ -54,6 +71,7 @@ function resolverJogadorPorNome(nome, jogadores) {
   const nomeCanonico = aliasesJogadores[nomeNormalizado]
 
   if (nomeCanonico) {
+    // Se existe um apelido conhecido, procuro pelo nome certo do cadastro.
     const candidatos = jogadores.filter(
       (jogador) => normalizarNome(jogador.nome) === normalizarNome(nomeCanonico)
     )
@@ -71,8 +89,8 @@ function resolverJogadorPorNome(nome, jogadores) {
     (jogador) => normalizarNome(jogador.nome) === nomeNormalizado
   )
 
-  // Nome de uma palavra que também inicia outros nomes precisa ser confirmado
-  // por um alias, para não escolher o Gabriel errado, por exemplo.
+  // Se o primeiro nome aponta para mais de uma pessoa, não escolho no chute.
+  // Mostro as opções para a pessoa ajustar o nome da lista.
   const correspondenciasPeloPrimeiroNome = nomeNormalizado.includes(' ')
     ? []
     : jogadores.filter(
@@ -95,6 +113,7 @@ function resolverJogadorPorNome(nome, jogadores) {
 }
 
 function limparNomeColado(linha) {
+  // Tiro o número, o check e a observação de quem convidou antes de buscar o jogador.
   return linha
     .split('\t')[0]
     .replace(/^\s*\d+\s*(?:[-.)]\s*|\s+)/, '')
@@ -108,6 +127,7 @@ function limparNomeColado(linha) {
 }
 
 function encontrarDivisaoMaisEquilibrada(jogadoresLinha) {
+  // Recebo 16 jogadores de linha e monto grupos de quatro usando a média de cada um.
   const quantidade = jogadoresLinha.length
   const medias = jogadoresLinha.map(calcularMedia)
   const gruposPorPrimeiroIndice = Array.from(
@@ -115,11 +135,12 @@ function encontrarDivisaoMaisEquilibrada(jogadoresLinha) {
     () => []
   )
 
-  // Pré-calcula todas as combinações de quatro jogadores.
+  // Primeiro monto todos os grupos possíveis de quatro jogadores.
   for (let a = 0; a < quantidade - 3; a++) {
     for (let b = a + 1; b < quantidade - 2; b++) {
       for (let c = b + 1; c < quantidade - 1; c++) {
         for (let d = c + 1; d < quantidade; d++) {
+          // Cada bit marca um jogador. A máscara representa esse grupo de quatro.
           const mascara = (1 << a) | (1 << b) | (1 << c) | (1 << d)
           const soma = medias[a] + medias[b] + medias[c] + medias[d]
           gruposPorPrimeiroIndice[a].push({ mascara, soma })
@@ -128,10 +149,11 @@ function encontrarDivisaoMaisEquilibrada(jogadoresLinha) {
     }
   }
 
-  // Guarda a soma das médias para cada conjunto possível de jogadores.
+  // Guardo a soma das médias de cada grupo para não recalcular isso toda hora.
   const limite = 1 << quantidade
   const somaPorMascara = new Float64Array(limite)
   for (let mascara = 1; mascara < limite; mascara++) {
+    // Pego um jogador marcado, somo a média dele ao total dos outros bits da máscara.
     const bit = mascara & -mascara
     const indice = Math.log2(bit)
     somaPorMascara[mascara] =
@@ -141,13 +163,16 @@ function encontrarDivisaoMaisEquilibrada(jogadoresLinha) {
   let melhorDiferenca = Infinity
   let melhorVariancia = Infinity
   let melhoresMascaras = []
+  // Enquanto procuro, guardo aqui os três times que já foram montados.
   const mascarasDosTimes = []
   const somasDosTimes = []
 
   function avaliarUltimoTime(mascaraRestante) {
+    // Com os quatro times montados, comparo o total de cada um.
     const somas = [...somasDosTimes, somaPorMascara[mascaraRestante]]
     const maiorSoma = Math.max(...somas)
     const menorSoma = Math.min(...somas)
+    // Como todos os times têm quatro jogadores, comparar as somas é igual a comparar as médias.
     const diferenca = maiorSoma - menorSoma
     const mediaGeral = somas.reduce((total, soma) => total + soma, 0) / 4
     const variancia = somas.reduce(
@@ -155,6 +180,8 @@ function encontrarDivisaoMaisEquilibrada(jogadoresLinha) {
       0
     )
 
+    // Primeiro minimizo a diferença entre o time mais forte e o mais fraco.
+    // Se duas divisões empatam, escolho a que deixa os quatro totais mais próximos.
     if (
       diferenca < melhorDiferenca - 1e-10 ||
       (Math.abs(diferenca - melhorDiferenca) <= 1e-10 &&
@@ -172,15 +199,18 @@ function encontrarDivisaoMaisEquilibrada(jogadoresLinha) {
       return
     }
 
+    // Começo pelo primeiro jogador ainda sem time para não testar a mesma divisão em outra ordem.
     const primeiroBit = mascaraRestante & -mascaraRestante
     const primeiroIndice = Math.log2(primeiroBit)
 
     for (const grupo of gruposPorPrimeiroIndice[primeiroIndice]) {
+      // Só coloco esse grupo se os quatro ainda estiverem disponíveis.
       if ((mascaraRestante & grupo.mascara) !== grupo.mascara) continue
 
       mascarasDosTimes.push(grupo.mascara)
       somasDosTimes.push(grupo.soma)
       buscarDivisao(mascaraRestante ^ grupo.mascara)
+      // Volto um passo e testo outro grupo que também pode caber nessa divisão.
       mascarasDosTimes.pop()
       somasDosTimes.pop()
     }
@@ -188,6 +218,7 @@ function encontrarDivisaoMaisEquilibrada(jogadoresLinha) {
 
   buscarDivisao(limite - 1)
 
+  // Transformo as máscaras de volta em nomes e ordeno pelo total do time.
   return melhoresMascaras
     .map((mascara) => {
       const jogadores = jogadoresLinha.filter(
@@ -202,18 +233,23 @@ function encontrarDivisaoMaisEquilibrada(jogadoresLinha) {
 }
 
 function TabelaJogadores() {
+  // 'jogadores' tem o que está na tela; 'jogadoresOriginais' tem o que veio do banco.
+  // Com as duas listas eu sei o que mudou sem mexer no banco enquanto a pessoa digita.
   const [jogadores, setJogadores] = useState([])
   const [jogadoresOriginais, setJogadoresOriginais] = useState([])
   const [erro, setErro] = useState('')
   const [mensagem, setMensagem] = useState('')
   const [salvando, setSalvando] = useState(false)
+  const [editando, setEditando] = useState(false)
   const [ordenarPor, setOrdenarPor] = useState('nome')
   const [ordem, setOrdem] = useState('asc')
   const [textoListaAtual, setTextoListaAtual] = useState('')
   const [timesGerados, setTimesGerados] = useState([])
   const [erroTimes, setErroTimes] = useState('')
+  const [statusCopia, setStatusCopia] = useState('')
 
   useEffect(() => {
+    // Carrego a lista do banco quando a Administração abre.
     listarJogadores()
       .then((resposta) => {
         setJogadores(resposta.data)
@@ -227,7 +263,7 @@ function TabelaJogadores() {
       (item) => item.id === jogador.id
     )
 
-    return original && !notasSaoIguais(jogador, original)
+    return original && !jogadoresSaoIguais(jogador, original)
   })
 
   function alternarOrdenacao(campo) {
@@ -243,9 +279,16 @@ function TabelaJogadores() {
   }
 
   const jogadoresOrdenados = [...jogadores].sort((jogadorA, jogadorB) => {
+    const jogadorASalvo = jogadoresOriginais.find(
+      (item) => item.id === jogadorA.id
+    ) ?? jogadorA
+    const jogadorBSalvo = jogadoresOriginais.find(
+      (item) => item.id === jogadorB.id
+    ) ?? jogadorB
+
     if (ordenarPor === 'nome') {
-      const comparacao = jogadorA.nome.localeCompare(
-        jogadorB.nome,
+      const comparacao = jogadorASalvo.nome.localeCompare(
+        jogadorBSalvo.nome,
         'pt-BR'
       )
 
@@ -253,12 +296,12 @@ function TabelaJogadores() {
     }
 
     // Goleiros ficam no fim quando a lista é ordenada pela média.
-    if (jogadorA.isGoleiro !== jogadorB.isGoleiro) {
-      return jogadorA.isGoleiro ? 1 : -1
+    if (jogadorASalvo.isGoleiro !== jogadorBSalvo.isGoleiro) {
+      return jogadorASalvo.isGoleiro ? 1 : -1
     }
 
-    const mediaA = calcularMedia(jogadorA)
-    const mediaB = calcularMedia(jogadorB)
+    const mediaA = calcularMedia(jogadorASalvo)
+    const mediaB = calcularMedia(jogadorBSalvo)
 
     if (mediaA === null && mediaB !== null) return 1
     if (mediaB === null && mediaA !== null) return -1
@@ -285,6 +328,7 @@ function TabelaJogadores() {
   )
 
   function alterarNota(id, campo, valor) {
+    // Atualizo o rascunho. O banco só muda quando clicarem em Salvar alterações.
     setJogadores((listaAtual) =>
       listaAtual.map((jogador) =>
         jogador.id === id
@@ -296,12 +340,35 @@ function TabelaJogadores() {
     setMensagem('')
     setErro('')
     setTimesGerados([])
+    setStatusCopia('')
+  }
+
+  function alterarNome(id, nome) {
+    // O nome também fica como rascunho até ser salvo.
+    setJogadores((listaAtual) =>
+      listaAtual.map((jogador) =>
+        jogador.id === id ? { ...jogador, nome } : jogador
+      )
+    )
+    setMensagem('')
+    setErro('')
+  }
+
+  function cancelarEdicao() {
+    // Desfaço as mudanças que ainda não foram salvas.
+    setJogadores(jogadoresOriginais)
+    setEditando(false)
+    setErro('')
+    setMensagem('')
   }
 
   function tirarTimes() {
+    // Apago o resultado anterior e confiro a lista antes de montar os times.
     setTimesGerados([])
     setErroTimes('')
+    setStatusCopia('')
 
+    // Primeiro vejo se tem nome que não achei, nome duvidoso ou jogador repetido.
     const desconhecidos = jogadoresDaLista
       .filter((item) => item.status === 'nao-encontrado')
       .map((item) => item.nome)
@@ -314,6 +381,7 @@ function TabelaJogadores() {
     const goleirosNaLista = jogadoresDaLista.filter(
       (item) => item.jogador?.isGoleiro
     )
+    // Os goleiros aparecem na lista, mas não entram nos quatro times de linha.
     const contagemPorId = new Map()
 
     for (const jogador of jogadoresLinha) {
@@ -353,10 +421,12 @@ function TabelaJogadores() {
     }
 
     if (problemas.length > 0) {
+      // Se tem algum problema, paro aqui em vez de sortear uma lista errada.
       setErroTimes(problemas.join(' '))
       return
     }
 
+    // Com 16 jogadores válidos, procuro a divisão mais equilibrada.
     setTimesGerados(encontrarDivisaoMaisEquilibrada(jogadoresLinha))
     if (goleirosNaLista.length > 0) {
       setMensagem(
@@ -367,17 +437,71 @@ function TabelaJogadores() {
     }
   }
 
+  async function copiarTimes() {
+    // Junto os nomes em texto para copiar e colar no grupo.
+    const textoTimes = timesGerados
+      .map((time, indice) =>
+        [
+          `TIME ${indice + 1} (média ${time.media.toFixed(2)})`,
+          ...time.jogadores.map((jogador) => `- ${jogador.nome}`),
+        ].join('\n')
+      )
+      .join('\n\n')
+
+    try {
+      await navigator.clipboard.writeText(textoTimes)
+      setStatusCopia('Lista de times copiada.')
+    } catch {
+      setStatusCopia('Não foi possível copiar a lista de times.')
+    }
+  }
+
   async function salvarAlteracoes() {
+    // Envio só os jogadores que realmente mudaram.
     const jogadoresAlterados = jogadores.filter((jogador) => {
       const original = jogadoresOriginais.find(
         (item) => item.id === jogador.id
       )
 
-      return original && !notasSaoIguais(jogador, original)
+      return original && !jogadoresSaoIguais(jogador, original)
     })
 
     if (jogadoresAlterados.length === 0) {
       setMensagem('Não há alterações para salvar.')
+      setEditando(false)
+      return
+    }
+
+    // Não deixo salvar nome vazio nem criar repetição nova.
+    // Nomes que já eram repetidos no cadastro, como linha e goleiro, podem continuar iguais.
+    const nomeVazio = jogadores.some((jogador) => !jogador.nome.trim())
+    const nomesDuplicados = []
+
+    for (let indice = 0; indice < jogadores.length; indice++) {
+      for (let proximoIndice = indice + 1; proximoIndice < jogadores.length; proximoIndice++) {
+        const atual = jogadores[indice]
+        const proximo = jogadores[proximoIndice]
+
+        if (normalizarNomeParaValidacao(atual.nome) !== normalizarNomeParaValidacao(proximo.nome)) {
+          continue
+        }
+
+        const originalAtual = jogadoresOriginais.find((item) => item.id === atual.id)
+        const originalProximo = jogadoresOriginais.find((item) => item.id === proximo.id)
+        const duplicidadePreexistente = originalAtual && originalProximo &&
+          normalizarNomeParaValidacao(originalAtual.nome) === normalizarNomeParaValidacao(originalProximo.nome)
+
+        if (!duplicidadePreexistente) {
+          nomesDuplicados.push(atual.nome.trim())
+        }
+      }
+    }
+    const nomeDuplicado = nomesDuplicados.length > 0
+
+    if (nomeVazio || nomeDuplicado) {
+      setErro(nomeVazio
+        ? 'Preencha o nome de todos os jogadores antes de salvar.'
+        : 'Há nomes repetidos na tabela. Ajuste-os antes de salvar.')
       return
     }
 
@@ -386,8 +510,10 @@ function TabelaJogadores() {
     setMensagem('')
 
     const resultados = await Promise.allSettled(
+      // Cada jogador alterado é enviado separadamente para a API.
       jogadoresAlterados.map((jogador) =>
         atualizarNotas(jogador.id, {
+          nome: jogador.nome.trim(),
           notaMarcelinho: jogador.notaMarcelinho,
           notaCamilinho: jogador.notaCamilinho,
           notaConvidado: jogador.notaConvidado,
@@ -400,6 +526,7 @@ function TabelaJogadores() {
       .map((resultado) => resultado.value.data)
 
     if (jogadoresSalvos.length > 0) {
+      // Atualizo a lista original com o retorno do servidor para limpar o rascunho salvo.
       setJogadores((listaAtual) =>
         listaAtual.map(
           (jogador) =>
@@ -421,6 +548,7 @@ function TabelaJogadores() {
 
     if (quantidadeComErro === 0) {
       setMensagem('Todas as alterações foram salvas.')
+      setEditando(false)
     } else {
       setErro(
         `${jogadoresSalvos.length} jogador(es) salvo(s); ${quantidadeComErro} não puderam ser salvos.`
@@ -433,17 +561,34 @@ function TabelaJogadores() {
   return (
     <div className="painel-administracao">
       <div className="acoes-administracao">
-        <button
-          onClick={salvarAlteracoes}
-          disabled={salvando || !temAlteracoes}
-        >
-          {salvando ? 'Salvando…' : 'Salvar alterações'}
-        </button>
+        {!editando ? (
+          <button onClick={() => setEditando(true)} disabled={salvando}>
+            Editar
+          </button>
+        ) : (
+          <div className="botoes-edicao">
+            <button onClick={salvarAlteracoes} disabled={salvando || !temAlteracoes}>
+              {salvando ? 'Salvando…' : 'Salvar alterações'}
+            </button>
+            <button onClick={cancelarEdicao} disabled={salvando}>
+              Cancelar
+            </button>
+          </div>
+        )}
       </div>
 
       <section className="painel-notas">
         {erro && <p>{erro}</p>}
         {mensagem && <p>{mensagem}</p>}
+
+        <div className="mobile-sort-controls" aria-label="Ordenar jogadores">
+          <button onClick={() => alternarOrdenacao('nome')}>
+            Nome {ordenarPor === 'nome' ? (ordem === 'asc' ? '↑' : '↓') : '↕'}
+          </button>
+          <button onClick={() => alternarOrdenacao('media')}>
+            Média {ordenarPor === 'media' ? (ordem === 'asc' ? '↑' : '↓') : '↕'}
+          </button>
+        </div>
 
         <div className="tabela-scroll">
           <table className="tabela-jogadores">
@@ -468,16 +613,29 @@ function TabelaJogadores() {
 
             <tbody>
               {jogadoresOrdenados.map((jogador) => {
-                const media = jogador.isGoleiro
+                const jogadorSalvo = jogadoresOriginais.find(
+                  (item) => item.id === jogador.id
+                ) ?? jogador
+                const media = jogadorSalvo.isGoleiro
                   ? null
-                  : calcularMedia(jogador)
+                  : calcularMedia(jogadorSalvo)
 
                 return (
                   <tr
                     key={jogador.id}
                     className={idsNaLista.has(jogador.id) ? 'jogador-na-lista' : undefined}
                   >
-                    <td>{jogador.nome}</td>
+                    <td>
+                      {editando ? (
+                        <input
+                          className="input-nome-jogador"
+                          type="text"
+                          value={jogador.nome}
+                          onChange={(evento) => alterarNome(jogador.id, evento.target.value)}
+                          aria-label={`Nome de ${jogadorSalvo.nome}`}
+                        />
+                      ) : jogador.nome}
+                    </td>
                     <td>{media === null ? '—' : media.toFixed(2)}</td>
 
                     {camposDasNotas.map((campo) => (
@@ -488,6 +646,7 @@ function TabelaJogadores() {
                           max="5"
                           step="0.01"
                           value={jogador[campo] ?? ''}
+                          disabled={!editando}
                           onChange={(evento) =>
                             alterarNota(
                               jogador.id,
@@ -518,6 +677,7 @@ function TabelaJogadores() {
             setTextoListaAtual(evento.target.value)
             setTimesGerados([])
             setErroTimes('')
+            setStatusCopia('')
             setMensagem('')
           }}
           placeholder={'Exemplo:\nCamillo\nMarcelinho\nDiogo Ramon'}
@@ -562,7 +722,30 @@ function TabelaJogadores() {
         </aside>
 
         <section className="painel-times">
-        <h2>TIMES</h2>
+        <div className="cabecalho-times">
+          <h2>TIMES</h2>
+          <button
+            className="botao-copiar-times"
+            onClick={copiarTimes}
+            disabled={timesGerados.length === 0}
+            title="Copiar lista dos times"
+            aria-label="Copiar lista dos times"
+          >
+            <svg
+              aria-hidden="true"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <rect x="8" y="8" width="13" height="13" rx="2" />
+              <path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3" />
+            </svg>
+          </button>
+        </div>
+        {statusCopia && <p className="status-copia" role="status">{statusCopia}</p>}
         {timesGerados.length > 0 ? (
           <div className="times-gerados">
             {timesGerados.map((time, indice) => (
