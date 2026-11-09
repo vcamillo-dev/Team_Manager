@@ -1,0 +1,9 @@
+# Configuracoes e credenciais locais
+**/application-local.properties
+**/.env
+**/.env.*
+!**/.env.example
+# Arquivos gerados
+**/node_modules/
+**/dist/
+**/target/
