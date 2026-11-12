@@ -4,7 +4,7 @@ import TabelaJogadores from './components/TabelaJogadores'
 import './App.css'
 
 function App() {
-  // Uma escolha troca entre Dashboard e Administração; no Dashboard guardo a aba aberta.
+  // Guardo a página aberta; no Dashboard também lembro qual aba está selecionada.
   const [paginaAtual, setPaginaAtual] = useState('dashboard')
   const [abaDashboard, setAbaDashboard] = useState('principal')
 
@@ -23,6 +23,13 @@ function App() {
             Dashboard
           </button>
           <button
+            className={paginaAtual === 'times' ? 'link-navbar ativo' : 'link-navbar'}
+            onClick={() => setPaginaAtual('times')}
+            aria-current={paginaAtual === 'times' ? 'page' : undefined}
+          >
+            Times
+          </button>
+          <button
             className={paginaAtual === 'administracao' ? 'link-navbar ativo' : 'link-navbar'}
             onClick={() => setPaginaAtual('administracao')}
             aria-current={paginaAtual === 'administracao' ? 'page' : undefined}
@@ -38,6 +45,12 @@ function App() {
             <h1>Administração</h1>
             <p>Gerencie as notas dos jogadores.</p>
             <TabelaJogadores />
+          </section>
+        ) : paginaAtual === 'times' ? (
+          <section className="pagina-times">
+            <h1>Montar times</h1>
+            <p>Organize a lista e monte quatro times equilibrados.</p>
+            <TabelaJogadores somenteTimes />
           </section>
         ) : (
           <div className="layout-dashboard">

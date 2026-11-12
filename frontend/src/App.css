@@ -166,6 +166,30 @@
   display: none;
 }
 
+.mobile-player-tools {
+  display: none;
+}
+
+.resumo-jogador-mobile {
+  display: none;
+}
+
+.linha-detalhes-mobile {
+  display: none;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 .lista-atual {
   padding: 0.9rem;
   border: 1px solid color-mix(in srgb, currentColor 22%, transparent);
@@ -514,6 +538,233 @@
   .tabela-jogadores tbody tr.jogador-na-lista {
     box-shadow: inset 3px 0 currentColor;
   }
+
+  .somente-notas .mobile-player-tools {
+    display: flex;
+    gap: 0.5rem;
+    margin: 0.45rem 0 0.75rem;
+  }
+
+  .busca-jogador-mobile,
+  .ordenacao-mobile {
+    min-width: 0;
+  }
+
+  .busca-jogador-mobile {
+    flex: 1 1 auto;
+  }
+
+  .ordenacao-mobile {
+    flex: 0 1 11.5rem;
+  }
+
+  .busca-jogador-mobile input,
+  .ordenacao-mobile select {
+    box-sizing: border-box;
+    width: 100%;
+    min-height: 2.7rem;
+    padding: 0.45rem 0.6rem;
+    border: 1px solid color-mix(in srgb, currentColor 22%, transparent);
+    border-radius: 0.45rem;
+    background: color-mix(in srgb, currentColor 3%, transparent);
+    color: inherit;
+    font: inherit;
+    font-size: 0.82rem;
+  }
+
+  .somente-notas .tabela-jogadores tbody {
+    display: block;
+    overflow: hidden;
+    border: 1px solid color-mix(in srgb, currentColor 18%, transparent);
+    border-radius: 0.55rem;
+  }
+
+  .somente-notas .tabela-jogadores tbody tr.linha-resumo-jogador {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    margin: 0;
+    border: 0;
+    border-bottom: 1px solid color-mix(in srgb, currentColor 14%, transparent);
+    border-radius: 0;
+    background: transparent;
+  }
+
+  .somente-notas .tabela-jogadores tbody tr.linha-resumo-jogador:nth-child(even) {
+    background: color-mix(in srgb, currentColor 3%, transparent);
+  }
+
+  .somente-notas .tabela-jogadores tbody tr.linha-resumo-jogador td {
+    display: block;
+    min-height: 0;
+    padding: 0;
+    border: 0;
+    text-align: left;
+    font-size: 0.9rem;
+  }
+
+  .somente-notas .tabela-jogadores tbody tr.linha-resumo-jogador td:first-child {
+    grid-column: 1;
+    border: 0;
+    font-weight: 400;
+  }
+
+  .somente-notas .tabela-jogadores tbody tr.linha-resumo-jogador td:nth-child(2) {
+    display: none;
+  }
+
+  .somente-notas .tabela-jogadores tbody tr.linha-resumo-jogador td:nth-child(n + 3) {
+    display: none;
+  }
+
+  .somente-notas .nome-jogador-desktop {
+    display: none;
+  }
+
+  .somente-notas .resumo-jogador-mobile {
+    display: flex;
+    width: 100%;
+    min-height: 3.4rem;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.55rem 0.7rem;
+    border: 0;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    font-size: 0.9rem;
+    text-align: left;
+    cursor: pointer;
+  }
+
+  .somente-notas .resumo-jogador-direita {
+    display: flex;
+    flex: 0 0 auto;
+    align-items: center;
+    gap: 0.55rem;
+    color: var(--text-h);
+    font-size: 0.78rem;
+  }
+
+  .somente-notas .resumo-jogador-direita strong {
+    font-weight: 600;
+  }
+
+  .somente-notas .seta-expansao {
+    display: inline-block;
+    color: var(--text);
+    font-size: 1.1rem;
+    transition: transform 150ms ease;
+  }
+
+  .somente-notas .resumo-jogador-mobile[aria-expanded='true'] .seta-expansao {
+    transform: rotate(180deg);
+  }
+
+  .somente-notas .tabela-jogadores tbody tr.linha-resumo-jogador.jogador-expandido {
+    border-bottom: 0;
+    background: color-mix(in srgb, var(--accent) 6%, transparent);
+  }
+
+  .somente-notas .tabela-jogadores tbody tr.linha-detalhes-mobile {
+    display: none;
+    margin: 0;
+    border: 0;
+    border-bottom: 1px solid color-mix(in srgb, currentColor 14%, transparent);
+    border-radius: 0;
+    background: color-mix(in srgb, currentColor 3%, transparent);
+  }
+
+  .somente-notas .tabela-jogadores tbody tr.linha-detalhes-mobile.aberta {
+    display: block;
+  }
+
+  .somente-notas .tabela-jogadores tbody tr.linha-detalhes-mobile td {
+    display: block;
+    width: auto;
+    padding: 0.6rem 0.7rem 0.75rem;
+    border: 0;
+  }
+
+  .detalhes-notas-mobile {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.45rem;
+  }
+
+  .detalhe-nota-mobile,
+  .detalhes-notas-mobile label {
+    display: flex;
+    min-width: 0;
+    min-height: 2.7rem;
+    flex-direction: column;
+    justify-content: center;
+    gap: 0.15rem;
+    padding: 0.45rem 0.55rem;
+    border: 1px solid color-mix(in srgb, currentColor 13%, transparent);
+    border-radius: 0.4rem;
+    font-size: 0.75rem;
+  }
+
+  .detalhe-nota-mobile span,
+  .detalhes-notas-mobile label {
+    opacity: 0.82;
+  }
+
+  .detalhe-nota-mobile strong {
+    color: var(--text-h);
+    font-size: 0.88rem;
+  }
+
+  .detalhes-notas-mobile label input {
+    box-sizing: border-box;
+    width: 100%;
+    min-height: 2.25rem;
+    padding: 0.25rem 0.4rem;
+    border: 1px solid color-mix(in srgb, currentColor 24%, transparent);
+    border-radius: 0.3rem;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    font-size: 1rem;
+    opacity: 1;
+  }
+
+  .somente-notas .linha-sem-jogadores td {
+    display: block;
+    padding: 0.85rem;
+    text-align: center;
+  }
+
+  .painel-administracao.editando-notas .acoes-administracao {
+    position: fixed;
+    z-index: 30;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    display: flex;
+    width: 100%;
+    box-sizing: border-box;
+    justify-content: center;
+    padding: 0.65rem 0.85rem calc(0.65rem + env(safe-area-inset-bottom));
+    border-top: 1px solid var(--border);
+    background: color-mix(in srgb, var(--bg) 94%, transparent);
+    backdrop-filter: blur(12px);
+  }
+
+  .painel-administracao.editando-notas .botoes-edicao {
+    width: min(100%, 32rem);
+  }
+
+  .painel-administracao.editando-notas .botoes-edicao button {
+    flex: 1;
+    min-height: 2.75rem;
+  }
+
+  .painel-administracao.editando-notas .painel-notas {
+    padding-bottom: calc(5rem + env(safe-area-inset-bottom));
+  }
 }
 
 .aplicacao {
@@ -746,5 +997,224 @@
 
   .abas-dashboard .link-navbar.ativo {
     border-bottom-color: var(--accent);
+  }
+}
+
+.pagina-times > h1,
+.pagina-times > p {
+  text-align: center;
+}
+
+.pagina-times > p {
+  margin-top: -0.5rem;
+  margin-bottom: 1.4rem;
+}
+
+.painel-administracao.pagina-times {
+  display: block;
+}
+
+.painel-administracao.somente-notas {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.somente-notas .tabela-jogadores {
+  width: 100%;
+}
+
+.pagina-times .area-construtor-times {
+  position: static;
+  display: grid;
+  grid-template-columns: minmax(17rem, 0.85fr) minmax(0, 1.35fr);
+  gap: 1rem;
+  max-height: none;
+  overflow: visible;
+}
+
+.pagina-times .lista-atual,
+.pagina-times .painel-times {
+  min-width: 0;
+  padding: 1rem;
+}
+
+.titulo-lista-times,
+.cabecalho-times {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.titulo-lista-times h2,
+.cabecalho-times h2 {
+  margin: 0;
+  color: var(--text-h);
+  font-size: 1.1rem;
+}
+
+.titulo-lista-times p,
+.cabecalho-times p {
+  margin: 0.25rem 0 0.75rem;
+  font-size: 0.82rem;
+  opacity: 0.8;
+}
+
+.status-lista {
+  flex: 0 0 auto;
+  padding: 0.25rem 0.5rem;
+  border: 1px solid color-mix(in srgb, currentColor 20%, transparent);
+  border-radius: 999px;
+  font-size: 0.75rem;
+  white-space: nowrap;
+}
+
+.status-lista.pronta {
+  border-color: color-mix(in srgb, #26875b 45%, transparent);
+  color: #26875b;
+}
+
+.pagina-times .lista-atual textarea {
+  min-height: 13rem;
+}
+
+.resumo-lista-times {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.8rem;
+  margin-top: 0.65rem;
+  font-size: 0.78rem;
+  opacity: 0.8;
+}
+
+.nomes-reconhecidos {
+  margin: 0.65rem 0 0;
+  font-size: 0.82rem;
+  color: #26875b;
+}
+
+.acoes-times {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.45rem;
+}
+
+.botao-editar-times,
+.botao-selecionar-troca {
+  min-height: 2.25rem;
+  padding: 0.35rem 0.65rem;
+  border: 1px solid color-mix(in srgb, currentColor 25%, transparent);
+  border-radius: 0.4rem;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 0.78rem;
+  cursor: pointer;
+}
+
+.botao-editar-times:hover,
+.botao-selecionar-troca:hover,
+.botao-selecionar-troca[aria-pressed='true'] {
+  border-color: var(--accent-border);
+  background: var(--accent-bg);
+  color: var(--text-h);
+}
+
+.mensagem-times,
+.ajuda-edicao-times {
+  margin: 0.55rem 0;
+  font-size: 0.8rem;
+}
+
+.ajuda-edicao-times {
+  opacity: 0.75;
+}
+
+.pagina-times .times-gerados {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.pagina-times .cartao-time {
+  padding: 0.8rem;
+  border-radius: 0.55rem;
+}
+
+.pagina-times .cartao-time h3 {
+  align-items: center;
+  margin-bottom: 0.5rem;
+  color: var(--text-h);
+}
+
+.pagina-times .cartao-time ol {
+  padding: 0;
+  list-style: none;
+}
+
+.pagina-times .cartao-time li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 0.45rem;
+  min-width: 0;
+  padding: 0.38rem 0;
+  border-bottom: 1px solid color-mix(in srgb, currentColor 12%, transparent);
+}
+
+.pagina-times .cartao-time li:last-child {
+  border-bottom: 0;
+}
+
+.pagina-times .cartao-time li small {
+  float: none;
+  white-space: nowrap;
+}
+
+.jogador-selecionado {
+  border-radius: 0.35rem;
+  background: var(--accent-bg);
+}
+
+.nome-jogador-time {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 850px) {
+  .pagina-times .area-construtor-times {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .pagina-times > p {
+    margin-bottom: 0.9rem;
+  }
+
+  .pagina-times .lista-atual textarea {
+    min-height: 10rem;
+  }
+
+  .pagina-times .times-gerados {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .pagina-times .cartao-time li {
+    grid-template-columns: minmax(0, 1fr) auto;
+    min-height: 2.75rem;
+  }
+
+  .pagina-times .cartao-time li .botao-selecionar-troca {
+    grid-column: 1 / -1;
+    width: 100%;
+    min-height: 2.5rem;
+  }
+
+  .pagina-times .acoes-times {
+    gap: 0.3rem;
+  }
+
+  .pagina-times .botao-editar-times {
+    min-height: 2.75rem;
+    padding-inline: 0.55rem;
   }
 }

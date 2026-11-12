@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { Fragment, useEffect, useState } from 'react'
 import { atualizarNotas, listarJogadores } from '../services/jogadoresApi'
 import '../App.css'
 
@@ -61,6 +61,12 @@ const aliasesJogadores = {
   [normalizarNome('Eduardo Sabino')]: 'Dudu Sabino',
   [normalizarNome('Turra')]: 'Pedro Turra',
   [normalizarNome('Felipe Fifi')]: 'Fifi',
+  [normalizarNome('Felipe Maia')]: 'Maia',
+  [normalizarNome('Cosme Olímpio')]: 'Cosme',
+  [normalizarNome('João Carlos Neri')]: 'JC',
+  [normalizarNome('Lucas Medeiros Garrote')]: 'Garrote',
+  [normalizarNome('Matheus Vitoriano Magão')]: 'Magão',
+  [normalizarNome('Laur')]: 'Lauir',
   [normalizarNome('Julio César')]: 'Julio (LINHA)',
   [normalizarNome('Julio César (LINHA)')]: 'Julio (LINHA)',
   [normalizarNome('Julio César (GOLEIRO)')]: 'Julio (GOLEIRO)',
@@ -121,6 +127,7 @@ function limparNomeColado(linha) {
       const funcao = conteudo.trim().toLocaleLowerCase('pt-BR')
       return funcao === 'goleiro' || funcao === 'linha' ? ` ${funcao} ` : ' '
     })
+    .replace(/\p{Extended_Pictographic}/gu, ' ')
     .replace(/✅|✔️?|✓|☑️?|☒️?|\[[xX]\]|\([xX]\)/g, '')
     .replace(/\s+/g, ' ')
     .trim()
@@ -232,19 +239,25 @@ function encontrarDivisaoMaisEquilibrada(jogadoresLinha) {
     .sort((timeA, timeB) => timeB.media - timeA.media)
 }
 
-function TabelaJogadores() {
+function TabelaJogadores({ somenteTimes = false }) {
   // 'jogadores' tem o que está na tela; 'jogadoresOriginais' tem o que veio do banco.
   // Com as duas listas eu sei o que mudou sem mexer no banco enquanto a pessoa digita.
   const [jogadores, setJogadores] = useState([])
   const [jogadoresOriginais, setJogadoresOriginais] = useState([])
+  const [carregandoJogadores, setCarregandoJogadores] = useState(true)
   const [erro, setErro] = useState('')
   const [mensagem, setMensagem] = useState('')
   const [salvando, setSalvando] = useState(false)
   const [editando, setEditando] = useState(false)
   const [ordenarPor, setOrdenarPor] = useState('nome')
   const [ordem, setOrdem] = useState('asc')
+  const [buscaJogador, setBuscaJogador] = useState('')
+  const [jogadorExpandidoId, setJogadorExpandidoId] = useState(null)
   const [textoListaAtual, setTextoListaAtual] = useState('')
   const [timesGerados, setTimesGerados] = useState([])
+  const [editandoTimes, setEditandoTimes] = useState(false)
+  const [jogadorSelecionado, setJogadorSelecionado] = useState(null)
+  const [mensagemTimes, setMensagemTimes] = useState('')
   const [erroTimes, setErroTimes] = useState('')
   const [statusCopia, setStatusCopia] = useState('')
 
@@ -256,6 +269,7 @@ function TabelaJogadores() {
         setJogadoresOriginais(resposta.data)
       })
       .catch(() => setErro('Não foi possível carregar os jogadores.'))
+      .finally(() => setCarregandoJogadores(false))
   }, [])
 
   const temAlteracoes = jogadores.some((jogador) => {
@@ -311,6 +325,12 @@ function TabelaJogadores() {
     return ordem === 'asc' ? comparacao : -comparacao
   })
 
+  const jogadoresVisiveis = jogadoresOrdenados.filter((jogador) =>
+    normalizarNomeParaValidacao(jogador.nome).includes(
+      normalizarNomeParaValidacao(buscaJogador)
+    )
+  )
+
   const nomesColados = textoListaAtual
     .split(/\r?\n/)
     .map(limparNomeColado)
@@ -320,6 +340,28 @@ function TabelaJogadores() {
     nome,
     ...resolverJogadorPorNome(nome, jogadores),
   }))
+
+  const jogadoresDeLinhaReconhecidos = jogadoresDaLista
+    .filter((item) => item.jogador && !item.jogador.isGoleiro)
+  const contagemDeJogadoresNaLista = new Map()
+  for (const item of jogadoresDeLinhaReconhecidos) {
+    const id = item.jogador.id
+    contagemDeJogadoresNaLista.set(id, (contagemDeJogadoresNaLista.get(id) ?? 0) + 1)
+  }
+  const idsDuplicadosNaLista = new Set(
+    [...contagemDeJogadoresNaLista]
+      .filter(([, quantidade]) => quantidade > 1)
+      .map(([id]) => id)
+  )
+  const quantidadeJogadoresDeLinha = new Set(
+    jogadoresDeLinhaReconhecidos.map((item) => item.jogador.id)
+  ).size
+  const quantidadeGoleirosNaLista = jogadoresDaLista.filter(
+    (item) => item.jogador?.isGoleiro
+  ).length
+  const nomesParaConferir = jogadoresDaLista.filter(
+    (item) => item.status !== 'encontrado' || idsDuplicadosNaLista.has(item.jogador?.id)
+  )
 
   const idsNaLista = new Set(
     jogadoresDaLista
@@ -367,6 +409,9 @@ function TabelaJogadores() {
     setTimesGerados([])
     setErroTimes('')
     setStatusCopia('')
+    setMensagemTimes('')
+    setEditandoTimes(false)
+    setJogadorSelecionado(null)
 
     // Primeiro vejo se tem nome que não achei, nome duvidoso ou jogador repetido.
     const desconhecidos = jogadoresDaLista
@@ -429,12 +474,81 @@ function TabelaJogadores() {
     // Com 16 jogadores válidos, procuro a divisão mais equilibrada.
     setTimesGerados(encontrarDivisaoMaisEquilibrada(jogadoresLinha))
     if (goleirosNaLista.length > 0) {
-      setMensagem(
+      setMensagemTimes(
         `${goleirosNaLista.length} goleiro(s) ficaram fora dos times e do cálculo de equilíbrio.`
       )
     } else {
-      setMensagem('Times montados com 16 jogadores de linha; goleiros ficam fora do sorteio.')
+      setMensagemTimes('Times montados com 16 jogadores de linha; goleiros ficam fora do sorteio.')
     }
+  }
+
+  function selecionarJogadorParaTroca(indiceTime, idJogador) {
+    if (!editandoTimes) return
+
+    if (!jogadorSelecionado) {
+      setJogadorSelecionado({ indiceTime, idJogador })
+      setMensagemTimes('Jogador selecionado. Escolha alguém de outro time para trocar.')
+      return
+    }
+
+    if (
+      jogadorSelecionado.indiceTime === indiceTime &&
+      jogadorSelecionado.idJogador === idJogador
+    ) {
+      setJogadorSelecionado(null)
+      setMensagemTimes('Seleção cancelada.')
+      return
+    }
+
+    if (jogadorSelecionado.indiceTime === indiceTime) {
+      setJogadorSelecionado({ indiceTime, idJogador })
+      setMensagemTimes('Escolha um jogador de outro time para fazer a troca.')
+      return
+    }
+
+    const jogadorOrigem = jogadorSelecionado
+    setTimesGerados((timesAtuais) => {
+      const novosTimes = timesAtuais.map((time) => ({
+        ...time,
+        jogadores: [...time.jogadores],
+      }))
+      const jogadoresOrigem = novosTimes[jogadorOrigem.indiceTime]?.jogadores
+      const jogadoresDestino = novosTimes[indiceTime]?.jogadores
+      const indiceOrigem = jogadoresOrigem?.findIndex(
+        (jogador) => jogador.id === jogadorOrigem.idJogador
+      )
+      const indiceDestino = jogadoresDestino?.findIndex(
+        (jogador) => jogador.id === idJogador
+      )
+
+      if (
+        !jogadoresOrigem ||
+        !jogadoresDestino ||
+        indiceOrigem === -1 ||
+        indiceDestino === -1
+      ) return timesAtuais
+
+      const jogadorMovido = jogadoresOrigem[indiceOrigem]
+      jogadoresOrigem[indiceOrigem] = jogadoresDestino[indiceDestino]
+      jogadoresDestino[indiceDestino] = jogadorMovido
+
+      return novosTimes.map((time) => ({
+        ...time,
+        media: time.jogadores.reduce(
+          (soma, jogador) => soma + (calcularMedia(jogador) ?? 0),
+          0
+        ) / time.jogadores.length,
+      }))
+    })
+
+    setJogadorSelecionado(null)
+    setMensagemTimes('Troca feita. As médias dos times foram atualizadas.')
+  }
+
+  function concluirEdicaoTimes() {
+    setEditandoTimes(false)
+    setJogadorSelecionado(null)
+    setMensagemTimes('Edição concluída. As mudanças valem para este sorteio.')
   }
 
   async function copiarTimes() {
@@ -559,35 +673,56 @@ function TabelaJogadores() {
   }
 
   return (
-    <div className="painel-administracao">
-      <div className="acoes-administracao">
-        {!editando ? (
-          <button onClick={() => setEditando(true)} disabled={salvando}>
-            Editar
-          </button>
-        ) : (
-          <div className="botoes-edicao">
-            <button onClick={salvarAlteracoes} disabled={salvando || !temAlteracoes}>
-              {salvando ? 'Salvando…' : 'Salvar alterações'}
+    <div className={`painel-administracao ${somenteTimes ? 'pagina-times' : 'somente-notas'}${editando && !somenteTimes ? ' editando-notas' : ''}`}>
+      {!somenteTimes && (
+        <div className="acoes-administracao">
+          {!editando ? (
+            <button onClick={() => setEditando(true)} disabled={salvando}>
+              Editar
             </button>
-            <button onClick={cancelarEdicao} disabled={salvando}>
-              Cancelar
-            </button>
-          </div>
-        )}
-      </div>
+          ) : (
+            <div className="botoes-edicao">
+              <button onClick={salvarAlteracoes} disabled={salvando || !temAlteracoes}>
+                {salvando ? 'Salvando…' : 'Salvar alterações'}
+              </button>
+              <button onClick={cancelarEdicao} disabled={salvando}>
+                Cancelar
+              </button>
+            </div>
+          )}
+        </div>
+      )}
 
-      <section className="painel-notas">
+      {!somenteTimes && <section className="painel-notas">
         {erro && <p>{erro}</p>}
         {mensagem && <p>{mensagem}</p>}
 
-        <div className="mobile-sort-controls" aria-label="Ordenar jogadores">
-          <button onClick={() => alternarOrdenacao('nome')}>
-            Nome {ordenarPor === 'nome' ? (ordem === 'asc' ? '↑' : '↓') : '↕'}
-          </button>
-          <button onClick={() => alternarOrdenacao('media')}>
-            Média {ordenarPor === 'media' ? (ordem === 'asc' ? '↑' : '↓') : '↕'}
-          </button>
+        <div className="mobile-player-tools">
+          <label className="busca-jogador-mobile">
+            <span className="sr-only">Buscar jogador pelo nome</span>
+            <input
+              type="search"
+              value={buscaJogador}
+              onChange={(evento) => setBuscaJogador(evento.target.value)}
+              placeholder="Buscar jogador"
+            />
+          </label>
+          <label className="ordenacao-mobile">
+            <span className="sr-only">Ordenar jogadores</span>
+            <select
+              value={`${ordenarPor}:${ordem}`}
+              onChange={(evento) => {
+                const [campo, direcao] = evento.target.value.split(':')
+                setOrdenarPor(campo)
+                setOrdem(direcao)
+              }}
+            >
+              <option value="nome:asc">Nome: A a Z</option>
+              <option value="nome:desc">Nome: Z a A</option>
+              <option value="media:desc">Média: maior primeiro</option>
+              <option value="media:asc">Média: menor primeiro</option>
+            </select>
+          </label>
         </div>
 
         <div className="tabela-scroll">
@@ -612,118 +747,223 @@ function TabelaJogadores() {
             </thead>
 
             <tbody>
-              {jogadoresOrdenados.map((jogador) => {
+              {jogadoresVisiveis.length === 0 ? (
+                <tr className="linha-sem-jogadores">
+                  <td colSpan="6">
+                    {jogadores.length === 0
+                      ? 'Carregando jogadores…'
+                      : 'Nenhum jogador encontrado com esse nome.'}
+                  </td>
+                </tr>
+              ) : jogadoresVisiveis.map((jogador) => {
                 const jogadorSalvo = jogadoresOriginais.find(
                   (item) => item.id === jogador.id
                 ) ?? jogador
                 const media = jogadorSalvo.isGoleiro
                   ? null
                   : calcularMedia(jogadorSalvo)
+                const jogadorEstaExpandido = jogadorExpandidoId === jogador.id
 
                 return (
-                  <tr
-                    key={jogador.id}
-                    className={idsNaLista.has(jogador.id) ? 'jogador-na-lista' : undefined}
-                  >
-                    <td>
-                      {editando ? (
-                        <input
-                          className="input-nome-jogador"
-                          type="text"
-                          value={jogador.nome}
-                          onChange={(evento) => alterarNome(jogador.id, evento.target.value)}
-                          aria-label={`Nome de ${jogadorSalvo.nome}`}
-                        />
-                      ) : jogador.nome}
-                    </td>
-                    <td>{media === null ? '—' : media.toFixed(2)}</td>
-
-                    {camposDasNotas.map((campo) => (
-                      <td key={campo}>
-                        <input
-                          type="number"
-                          min="0"
-                          max="5"
-                          step="0.01"
-                          value={jogador[campo] ?? ''}
-                          disabled={!editando}
-                          onChange={(evento) =>
-                            alterarNota(
-                              jogador.id,
-                              campo,
-                              evento.target.value
-                            )
-                          }
-                        />
+                  <Fragment key={jogador.id}>
+                    <tr
+                      className={`linha-resumo-jogador${idsNaLista.has(jogador.id) ? ' jogador-na-lista' : ''}${jogadorEstaExpandido ? ' jogador-expandido' : ''}`}
+                    >
+                      <td>
+                        <span className="nome-jogador-desktop">
+                          {editando ? (
+                            <input
+                              className="input-nome-jogador"
+                              type="text"
+                              value={jogador.nome}
+                              onChange={(evento) => alterarNome(jogador.id, evento.target.value)}
+                              aria-label={`Nome de ${jogadorSalvo.nome}`}
+                            />
+                          ) : jogador.nome}
+                        </span>
+                        <button
+                          type="button"
+                          className="resumo-jogador-mobile"
+                          aria-expanded={jogadorEstaExpandido}
+                          onClick={() => setJogadorExpandidoId(jogadorEstaExpandido ? null : jogador.id)}
+                        >
+                          <span>{jogador.nome}</span>
+                          <span className="resumo-jogador-direita">
+                            <strong>{jogadorSalvo.isGoleiro ? 'Goleiro' : `Média ${media === null ? '—' : media.toFixed(2)}`}</strong>
+                            <span className="seta-expansao" aria-hidden="true">⌄</span>
+                          </span>
+                        </button>
                       </td>
-                    ))}
+                      <td>{media === null ? '—' : media.toFixed(2)}</td>
 
-                    <td>{jogador.isGoleiro ? 'Sim' : 'Não'}</td>
-                  </tr>
+                      {camposDasNotas.map((campo) => (
+                        <td key={campo}>
+                          <input
+                            type="number"
+                            min="0"
+                            max="5"
+                            step="0.01"
+                            value={jogador[campo] ?? ''}
+                            disabled={!editando}
+                            onChange={(evento) =>
+                              alterarNota(jogador.id, campo, evento.target.value)
+                            }
+                          />
+                        </td>
+                      ))}
+
+                      <td>{jogador.isGoleiro ? 'Sim' : 'Não'}</td>
+                    </tr>
+                    <tr
+                      className={`linha-detalhes-mobile${jogadorEstaExpandido ? ' aberta' : ''}`}
+                      aria-hidden={!jogadorEstaExpandido}
+                    >
+                      <td colSpan="6">
+                        <div className="detalhes-notas-mobile">
+                          {editando && (
+                            <label>
+                              Nome
+                              <input
+                                className="input-nome-jogador"
+                                type="text"
+                                value={jogador.nome}
+                                onChange={(evento) => alterarNome(jogador.id, evento.target.value)}
+                                aria-label={`Nome de ${jogadorSalvo.nome}`}
+                              />
+                            </label>
+                          )}
+                          {camposDasNotas.map((campo, indice) => (
+                            editando ? (
+                              <label key={campo}>
+                                {['Nota de Marcelinho', 'Nota de Camillo', 'Nota do convidado'][indice]}
+                                <input
+                                  type="number"
+                                  min="0"
+                                  max="5"
+                                  step="0.01"
+                                  value={jogador[campo] ?? ''}
+                                  onChange={(evento) => alterarNota(jogador.id, campo, evento.target.value)}
+                                />
+                              </label>
+                            ) : (
+                              <div className="detalhe-nota-mobile" key={campo}>
+                                <span>{['Nota de Marcelinho', 'Nota de Camillo', 'Nota do convidado'][indice]}</span>
+                                <strong>{jogadorSalvo[campo] ?? '—'}</strong>
+                              </div>
+                            )
+                          ))}
+                          <div className="detalhe-nota-mobile">
+                            <span>Goleiro</span>
+                            <strong>{jogadorSalvo.isGoleiro ? 'Sim' : 'Não'}</strong>
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                  </Fragment>
                 )
               })}
             </tbody>
           </table>
         </div>
-      </section>
+      </section>}
 
-      <div className="painel-lateral">
+      {somenteTimes && <div className="painel-lateral area-construtor-times">
         <aside className="lista-atual">
-        <h2>Quem vai jogar?</h2>
-        <p>Cole a lista atual abaixo, com um nome por linha.</p>
+        <div className="titulo-lista-times">
+          <div>
+            <h2>Quem vai jogar?</h2>
+            <p>Cole a lista atual, com um nome por linha.</p>
+          </div>
+          {carregandoJogadores ? (
+            <span className="status-lista">Carregando cadastro…</span>
+          ) : !erro ? (
+            <span className={quantidadeJogadoresDeLinha === 16 && jogadoresDeLinhaReconhecidos.length === 16 && nomesParaConferir.length === 0 ? 'status-lista pronta' : 'status-lista'}>
+              {quantidadeJogadoresDeLinha}/16 de linha
+            </span>
+          ) : null}
+        </div>
         <textarea
           value={textoListaAtual}
           onChange={(evento) => {
             setTextoListaAtual(evento.target.value)
             setTimesGerados([])
+            setEditandoTimes(false)
+            setJogadorSelecionado(null)
             setErroTimes('')
             setStatusCopia('')
+            setMensagemTimes('')
             setMensagem('')
           }}
           placeholder={'Exemplo:\nCamillo\nMarcelinho\nDiogo Ramon'}
           aria-label="Cole aqui a lista atual de jogadores"
         />
 
-        <button className="botao-tirar-times" onClick={tirarTimes}>
-          TIRAR TIMES
+        {erro && (
+          <p className="erro-times" role="alert">
+            Não consegui carregar o cadastro de jogadores. Confira se o backend está rodando e tente recarregar esta página.
+          </p>
+        )}
+        <button
+          className="botao-tirar-times"
+          onClick={tirarTimes}
+          disabled={carregandoJogadores || Boolean(erro) || jogadores.length === 0}
+        >
+          {timesGerados.length > 0 ? 'Sortear novamente' : 'Tirar times'}
         </button>
         {erroTimes && <p className="erro-times" role="alert">{erroTimes}</p>}
 
-        <h3>Jogadores na lista ({nomesColados.length})</h3>
-        {jogadoresDaLista.length > 0 ? (
-          <ul>
-            {jogadoresDaLista.map((item, indice) => (
-              <li
-                key={`${normalizarNome(item.nome)}-${indice}`}
-                className={
-                  item.status === 'ambiguo'
-                    ? 'nome-ambiguo'
-                    : item.jogador
-                      ? ''
-                      : 'nome-nao-encontrado'
-                }
-              >
-                <span>{item.jogador?.nome ?? item.nome}</span>
-                <small>
-                  {item.jogador
-                    ? item.jogador.isGoleiro
-                      ? 'Goleiro'
-                      : `Média ${calcularMedia(item.jogador)?.toFixed(2) ?? '—'}`
-                    : item.status === 'ambiguo'
-                      ? `Ambíguo: ${item.candidatos.map((jogador) => jogador.nome).join(' / ')}`
-                      : 'Não encontrado no cadastro'}
-                </small>
-              </li>
-            ))}
-          </ul>
-        ) : (
+        <div className="resumo-lista-times">
+          <span>{nomesColados.length} nomes na lista</span>
+          {quantidadeGoleirosNaLista > 0 && (
+            <span>{quantidadeGoleirosNaLista} goleiro(s) ficam fora dos times</span>
+          )}
+        </div>
+        {!carregandoJogadores && !erro && nomesParaConferir.length > 0 ? (
+          <>
+            <h3>Confira estes nomes</h3>
+            <ul>
+              {nomesParaConferir.map((item, indice) => (
+                <li
+                  key={`${normalizarNome(item.nome)}-${indice}`}
+                  className={item.status === 'ambiguo' ? 'nome-ambiguo' : 'nome-nao-encontrado'}
+                >
+                  <span>{item.nome}</span>
+                  <small>
+                    {item.status === 'ambiguo'
+                      ? `Pode ser: ${item.candidatos.map((jogador) => jogador.nome).join(' / ')}`
+                      : idsDuplicadosNaLista.has(item.jogador?.id)
+                        ? 'Este jogador aparece mais de uma vez'
+                        : 'Não encontrado no cadastro'}
+                  </small>
+                </li>
+              ))}
+            </ul>
+          </>
+        ) : !carregandoJogadores && !erro && nomesColados.length > 0 ? (
+          <p className="nomes-reconhecidos">Todos os nomes foram reconhecidos.</p>
+        ) : !carregandoJogadores && !erro ? (
           <p className="lista-vazia">A lista colada aparecerá aqui.</p>
-        )}
+        ) : null}
         </aside>
 
         <section className="painel-times">
         <div className="cabecalho-times">
-          <h2>TIMES</h2>
+          <div>
+            <h2>Times</h2>
+            {timesGerados.length > 0 && <p>Quatro grupos montados pela média dos jogadores.</p>}
+          </div>
+          <div className="acoes-times">
+            {timesGerados.length > 0 && (
+              <button
+                className="botao-editar-times"
+                onClick={editandoTimes ? concluirEdicaoTimes : () => {
+                  setEditandoTimes(true)
+                  setMensagemTimes('Selecione dois jogadores de times diferentes para trocar.')
+                }}
+              >
+                {editandoTimes ? 'Concluir edição' : 'Editar times'}
+              </button>
+            )}
           <button
             className="botao-copiar-times"
             onClick={copiarTimes}
@@ -744,18 +984,45 @@ function TabelaJogadores() {
               <path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3" />
             </svg>
           </button>
+          </div>
         </div>
         {statusCopia && <p className="status-copia" role="status">{statusCopia}</p>}
+        {mensagemTimes && <p className="mensagem-times" role="status">{mensagemTimes}</p>}
+        {editandoTimes && <p className="ajuda-edicao-times">Arraste um jogador para outro time ou selecione dois para trocar.</p>}
         {timesGerados.length > 0 ? (
           <div className="times-gerados">
             {timesGerados.map((time, indice) => (
-              <article className="cartao-time" key={indice}>
+              <article
+                className="cartao-time"
+                key={indice}
+                onDragOver={(evento) => {
+                  if (editandoTimes) evento.preventDefault()
+                }}
+              >
                 <h3>Time {indice + 1} <span>Média {time.media.toFixed(2)}</span></h3>
                 <ol>
                   {time.jogadores.map((jogador) => (
-                    <li key={jogador.id}>
-                      {jogador.nome}
-                      <small>{calcularMedia(jogador).toFixed(2)}</small>
+                    <li
+                      key={jogador.id}
+                      draggable={editandoTimes}
+                      className={jogadorSelecionado?.indiceTime === indice && jogadorSelecionado?.idJogador === jogador.id ? 'jogador-selecionado' : undefined}
+                      onDragStart={() => {
+                        if (editandoTimes) setJogadorSelecionado({ indiceTime: indice, idJogador: jogador.id })
+                      }}
+                      onDrop={() => selecionarJogadorParaTroca(indice, jogador.id)}
+                    >
+                      <span className="nome-jogador-time">{jogador.nome}</span>
+                      <small>Média {calcularMedia(jogador)?.toFixed(2) ?? '—'}</small>
+                      {editandoTimes && (
+                        <button
+                          type="button"
+                          className="botao-selecionar-troca"
+                          aria-pressed={jogadorSelecionado?.indiceTime === indice && jogadorSelecionado?.idJogador === jogador.id}
+                          onClick={() => selecionarJogadorParaTroca(indice, jogador.id)}
+                        >
+                          {jogadorSelecionado?.indiceTime === indice && jogadorSelecionado?.idJogador === jogador.id ? 'Selecionado' : 'Trocar'}
+                        </button>
+                      )}
                     </li>
                   ))}
                 </ol>
@@ -763,10 +1030,10 @@ function TabelaJogadores() {
             ))}
           </div>
         ) : (
-          <p className="lista-vazia">Os times gerados aparecerão aqui.</p>
+          <p className="lista-vazia">Depois do sorteio, os quatro times aparecem aqui para você conferir e ajustar.</p>
         )}
         </section>
-      </div>
+      </div>}
     </div>
   )
 }
